@@ -1,0 +1,85 @@
+version: '3'
+services:
+  es-master-node-1:
+    image: docker.elastic.co/elasticsearch/elasticsearch:5.6.16
+    networks:
+      my-network:
+        ipv4_address: 172.20.0.2
+    environment:
+      - cluster.name=my-cluster
+      - node.name=master-1
+      - discovery.zen.minimum_master_nodes=2
+    volumes:
+      - ./data/es-master-node-1-data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+
+  es-master-node-2:
+    image: docker.elastic.co/elasticsearch/elasticsearch:5.6.16
+    networks:
+      my-network:
+        ipv4_address: 172.20.0.3
+    environment:
+      - cluster.name=my-cluster
+      - node.name=master-2
+      - discovery.zen.minimum_master_nodes=2
+    volumes:
+      - ./data/es-master-node-2-data:/usr/share/elasticsearch/data
+
+  es-master-node-3:
+    image: docker.elastic.co/elasticsearch/elasticsearch:5.6.16
+    container_name: es-master-3
+    networks:
+      my-network:
+        ipv4_address: 172.20.0.4
+    environment:
+      - cluster.name=my-cluster
+      - node.name=master-3
+      - discovery.zen.minimum_master_nodes=2
+    volumes:
+      - ./data/es-master-node-3:/usr/share/elasticsearch/data
+
+  es-data-node-1:
+    image: docker.elastic.co/elasticsearch/elasticsearch:5.6.16
+    networks:
+      my-network:
+        ipv4_address: 172.20.0.5
+    environment:
+      - cluster.name=my-cluster
+      - node.name=data-1
+      - discovery.zen.minimum_master_nodes=2
+    volumes:
+      - ./data/es-data-node-1:/usr/share/elasticsearch/data
+
+  es-data-node-2:
+    image: docker.elastic.co/elasticsearch/elasticsearch:5.6.16
+    networks:
+      my-network:
+        ipv4_address: 172.20.0.6
+    environment:
+      - cluster.name=my-cluster
+      - node.name=data-2
+      - discovery.zen.minimum_master_nodes=2
+    volumes:
+      - ./data/es-data-node-2:/usr/share/elasticsearch/data
+  # Cerebro service
+  cerebro:
+    image: lmenezes/cerebro
+    container_name: cerebro
+    networks:
+      my-network:
+        ipv4_address: 172.20.0.7
+    environment:
+      - CEREBRO_PORT=9000
+      - CEREBRO_BASEPATH=/
+      - ELASTICSEARCH_HOSTS=http://es-master-node-1:9200
+    ports:
+      - "9000:9000"
+
+networks:
+  my-network:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/16
